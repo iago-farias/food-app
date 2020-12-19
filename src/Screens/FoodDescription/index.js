@@ -1,19 +1,41 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet,TouchableOpacity, Image} from 'react-native';
+import React, {useState, useRef} from 'react';
+import {
+  View, 
+  Text, 
+  StyleSheet,
+  TouchableOpacity, 
+  Image,
+  Animated
+} from 'react-native';
 import {useRoute, useNavigation} from '@react-navigation/native';
 import {MaterialIcons} from '@expo/vector-icons';
 
 import {COLORS} from '../../constants';
 
-const burgerImage3 = require('../../assets/images/burger-2.png'); 
+const burgerImage3 = require('../../assets/images/burger-2.png');
 
 function FoodDescription(){
   const [isFavorite, setIsFavorite] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState("M");
+  const [selectedSize, setSelectedSize] = useState(-1);
 
   const {item} = useRoute().params;
   const navigation = useNavigation();
+
+  const sizes = [
+    {
+      size:"S",
+      scaleAnimation: useRef(new Animated.Value(1)).current
+    },
+    {
+      size:"M",
+      scaleAnimation: useRef(new Animated.Value(1)).current
+    },
+    {
+      size:"L",
+      scaleAnimation: useRef(new Animated.Value(1)).current
+    },
+  ]
 
   function isSelected(size){
     let backgroundColor;
@@ -23,6 +45,27 @@ function FoodDescription(){
     size === selectedSize ? color = COLORS.white : color = COLORS.lightGray2;
     
     return {backgroundColor, color};
+  }
+
+  function scaleUp(size){
+    if(selectedSize >= 0){
+      scaleDown(selectedSize);
+    }
+
+    Animated.timing(size.scaleAnimation, {
+      toValue: 1.25,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  }
+
+  function scaleDown(sizeIndex){
+
+    Animated.timing(sizes[sizeIndex].scaleAnimation, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
   }
 
   return(
@@ -54,35 +97,25 @@ function FoodDescription(){
       <View style={styles.options}>
         <View style={{justifyContent:'space-between'}}>
           <View>
-            <TouchableOpacity 
-              onPress={() => setSelectedSize("S")} 
-              style={[
-                styles.optionSizeButton, 
-                isSelected("S"),           
-              ]}
-            >
-              <Text style={[isSelected("S"), {backgroundColor:'transparent'}]}>S</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={() => setSelectedSize("M")} 
-              style={[
-                styles.optionSizeButton, 
-                {marginTop: 12}, 
-                isSelected("M"),
-              ]}
-            >
-              <Text style={[isSelected("M"), {backgroundColor:'transparent'}]}>M</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={() => setSelectedSize("L")} 
-              style={[
-                styles.optionSizeButton, 
-                {marginTop: 12}, 
-                isSelected("L"),
-              ]}
-            >
-              <Text style={[isSelected("L"), {backgroundColor:'transparent'}]}>L</Text>
-            </TouchableOpacity>
+            {
+              sizes.map((size, index) => (
+                <TouchableOpacity
+                key={index} 
+                onPress={() => {
+                  scaleUp(size)
+                  setSelectedSize(index)
+                }} 
+                style={[
+                  styles.optionSizeButton, 
+                  isSelected(index),
+                  index > 0 ? {marginTop: 12} : null,
+                  {transform: [{scale: size.scaleAnimation}]},           
+                ]}
+              >
+                <Text style={[isSelected(index), {backgroundColor:'transparent'}]}>{size.size}</Text>
+              </TouchableOpacity>
+              ))
+            }
           </View>
 
           <View style={{alignItems:'center'}}>
@@ -203,7 +236,7 @@ const styles = StyleSheet.create({
     width:40,
     alignItems:'center',
     justifyContent:'center',
-    borderRadius:10
+    borderRadius:10,
   },
 
   foodProprieties:{
