@@ -4,5 +4,5 @@ O design do app foi inspirado na criação de [Christian Vasile](https://dribbbl
 
 # Captura de tela
 <p align="center">
-  <img alt="Screen capture" src=".gh-assets/captura.gif"/>
+  <img alt="Screen capture" src=".gh-assets/captura.gif" width="400"/>
 </p>
